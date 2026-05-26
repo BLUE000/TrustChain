@@ -1,0 +1,22 @@
+# TrustChain .gitignore
+
+# CMake build directories
+/build/
+/build-release/
+/CMakeSettings.json
+/out/
+
+# IDE files
+/.vs/
+/.qtcreator/
+/.vscode/
+/*.user
+/*.code-workspace
+
+# TrustChain Local Credentials (Security information - DO NOT COMMIT)
+*credentials.cmake
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
