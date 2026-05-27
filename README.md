@@ -119,6 +119,10 @@ This software uses TrustChain Module. Copyright (c) 2026 BLUE000.
 ## 6. ライセンス (お約束ごと)
 本ソフトウェアは **MITライセンス** のもとで公開されています。
 
+### 📦 サードパーティ製ライブラリのライセンス
+本ソフトウェアは、一部の機能において **Qt6** ライブラリを使用しています。
+* **Qt6**: [GNU Lesser General Public License (LGPL) version 3](https://www.gnu.org/licenses/lgpl-3.0.html) または [GNU General Public License (GPL) version 3](https://www.gnu.org/licenses/gpl-3.0.html) などのライセンスのもとで提供されています。詳細は [Qt Licensing](https://www.qt.io/licensing/) をご確認ください。
+
 ### ⚠️ 無保証（むほしょう）について
 本ソフトウェアは「現状有姿（今のままの形）」で提供され、特定の目的への適合性を含め、**一切の保証をいたしません。** 作者（BLUE000）は、本ソフトウェアを使用したこと、または使用できなかったことによって発生したいかなるトラブルや損害についても、**一切の責任を負いません。** 自己責任の上で安全にご利用ください。
 詳細は同梱の `LICENSE` ファイルをご覧ください。
