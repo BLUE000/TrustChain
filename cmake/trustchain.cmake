@@ -122,6 +122,7 @@ function(trustchain_setup_target TARGET_NAME)
         TRUSTCHAIN_API_TOKEN="${TRANSCIPHER_API_TOKEN}"
         TRUSTCHAIN_CREATOR_NAME="${TRUSTCHAIN_DEFAULT_CREATOR}"
         TRUSTCHAIN_TOKEN_ISSUER_URL="${TRUSTCHAIN_TOKEN_ISSUER_URL}"
+        TRUSTCHAIN_VERSION="${PROJECT_VERSION}"
     )
     
     message(STATUS "[TrustChain] Injected compile definitions successfully.")

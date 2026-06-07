@@ -39,13 +39,17 @@
 2. コピーしたファイルを、あなたのアプリのフォルダ（`CMakeLists.txt` と同じ場所）に貼り付け、名前を **`trustchain_credentials.cmake`** に変更します。
 3. そのファイルをテキストエディタで開き、あなたの情報に変更します。
    ```cmake
-   # あなたのGitHubのユーザー名と、アプリのリポジトリ（本棚）の名前を書きます
+   # あなたのGitHubのユーザー名と、アプリのリポジトリ（本棚）の名前、対象ブランチを書きます
    set(TRUSTCHAIN_GITHUB_USER "あなたのユーザー名")
    set(TRUSTCHAIN_GITHUB_REPO "あなたのアプリ名")
+   set(TRUSTCHAIN_TARGET_BRANCH "master")
    
    # TransCipherサーバーのURLと、ビルド用のひみつの合言葉を書きます
    set(TRUSTCHAIN_TOKEN_ISSUER_URL "https://streamers-tool.sakura.ne.jp/TransCipher/index.php")
    set(TRUSTCHAIN_BUILD_SECRET "あなたのひみつの鍵")
+
+   # ウォーターマーク（画面下部）に強制表示されるあなたの名前（著作権所有者名）を書きます
+   set(TRUSTCHAIN_DEFAULT_CREATOR "あなたの名前")
    ```
 > 💡 **TransCipher とは？**
 > アプリケーションの認証情報を安全に難読化・復元するための公開ライブラリおよび仕組みです。詳細については、公開用ディストリビューションリポジトリ [TransCipher-Dist](https://github.com/BLUE000/TransCipher-Dist) をご覧ください。
@@ -96,7 +100,21 @@ int main(int argc, char *argv[])
 }
 ```
 
-これで、あなたのアプリの出自証明とセキュリティの組み込みは完了です！🎉
+これで、あなたのアプリへの出自証明とセキュリティ（第1層・第2層）の組み込みは完了です！🎉
+
+---
+
+### 🔒 ステップ 4: 仕上げのバイナリ透かし（第3層プロテクト）
+CMakeのビルド設定を行うと、自動的に `tools/BinMarkManager/` ディレクトリに強力なバイナリ透かしツールがダウンロード・展開されます。
+
+あなたのアプリ（`.exe`）がビルドして完成したら、最後に以下の手順で物理的なウォーターマークを埋め込んで完成です！
+
+1. `tools/BinMarkManager/BinMarkManagerGUI.exe` を起動します。
+2. 完成したあなたのアプリ（`.exe`）をドラッグ＆ドロップします。
+3. `Copyright Text` にあなたの権利表記（例: `Copyright (c) 2026 あなたの名前`）を入れます。
+4. `Obfuscate & Embed Watermark` をクリックして埋め込み完了です！
+
+※これで、たとえソースコードが改ざんされてコンパイルし直されたとしても、バイナリに物理的に刻まれた証拠からあなたの権利を証明できるようになります。
 
 ---
 
