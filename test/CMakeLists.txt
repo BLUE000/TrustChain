@@ -31,14 +31,7 @@ set(TEST_SOURCES
 # 実行ターゲットの作成
 add_executable(TrustChainTest ${TEST_SOURCES})
 
-# コンパイル定義（マクロ）の仮定義
-# テスト時は BUILD_IS_CUSTOMIZED=0（公式）と仮定して検証可能にするため 0 を設定
-target_compile_definitions(TrustChainTest PRIVATE
-    TRUSTCHAIN_BUILD_IS_CUSTOMIZED=0
-    TRUSTCHAIN_API_TOKEN="MOCK_TEST_TOKEN_12345"
-    TRUSTCHAIN_CREATOR_NAME="BLUE000"
-    TRUSTCHAIN_TOKEN_ISSUER_URL="https://streamers-tool.sakura.ne.jp/TransCipher/index.php"
-)
+# コンパイル定義（マクロ）の仮定義は trustchain 側から INTERFACE 経由で取得されるため不要
 
 # インクルードディレクトリの指定
 target_include_directories(TrustChainTest PRIVATE

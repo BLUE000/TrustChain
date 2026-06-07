@@ -20,16 +20,20 @@ set(TRUSTCHAIN_SOURCES
     src/TrustChainQt.cpp
 )
 
-add_library(trustchain STATIC ${TRUSTCHAIN_SOURCES})
+add_library(trustchain INTERFACE)
+
+target_sources(trustchain INTERFACE
+    ${TRUSTCHAIN_SOURCES}
+)
 
 # インクルードディレクトリのエクスポート
-target_include_directories(trustchain PUBLIC
+target_include_directories(trustchain INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
 
 # 依存関係のリンク
-target_link_libraries(trustchain PUBLIC
+target_link_libraries(trustchain INTERFACE
     Qt6::Core
     Qt6::Widgets
     Qt6::Network
@@ -55,4 +59,7 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     
     # テストディレクトリの追加
     add_subdirectory(test)
+
+    # 動作確認用ダミーアプリケーションの追加
+    add_subdirectory(dummy_app)
 endif()

@@ -107,12 +107,22 @@ TrustChain は、もらった合言葉（トークン）の中にこの `\0` や
 
 ---
 
-## 5. 権利表記について（お願い）
-本モジュールは無料（オープンソース）でご利用いただけますが、もしよろしければ、あなたのアプリのソースコードのコメントや、アプリの「バージョン情報」画面などに、以下のクレジット（作者の表記）をコピペして載せていただけると、作者がとても喜びます！
+## 5. 権利表記についてのお願い
+本ツール（TrustChain）自体は、画面上に自身の権利表記（ウォーターマーク）を強制表示することはありません。あくまで「TrustChainを組み込んだあなたのアプリの権利」を守るための黒子として働きます。
+
+そのため、**TrustChainを使用してアプリを配布する際は、あなたのアプリの「Readme」や「ライセンス表記画面」などに、以下のサードパーティ・ライセンス表記をそのままコピペして記載していただくようお願いいたします。**
 
 ```text
 This software uses TrustChain Module. Copyright (c) 2026 BLUE000.
+Includes TransCipher, Copyright (c) 2026 BLUE000. (https://github.com/BLUE000/TransCipher-Dist)
+Includes BinMarkManager, Copyright (c) 2026 BLUE000. (https://github.com/BLUE000/BinMarkManager)
+
+Qt is licensed under the GNU Lesser General Public License (LGPL) version 3.
+Copyright (C) 2024 The Qt Company Ltd and other contributors.
+(https://www.qt.io/licensing/)
 ```
+
+（※上記を記載していただくだけで問題ありません。プログラム側で画面上に強制表示させることはありませんのでご安心ください）
 
 ---
 

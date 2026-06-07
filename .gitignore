@@ -5,6 +5,7 @@
 /build-release/
 /CMakeSettings.json
 /out/
+/sample/
 
 # IDE files
 /.vs/
@@ -20,3 +21,7 @@
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+WIP_STATE.md
+
+# External tools
+/tools/

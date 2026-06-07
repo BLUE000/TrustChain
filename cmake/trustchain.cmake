@@ -117,7 +117,7 @@ function(trustchain_setup_target TARGET_NAME)
 
     # 6. コンパイル定義（マクロ埋め込み）への設定
     # ダブルクォーテーションで安全に囲み、コンパイラへ通常の文字列定数として渡します。
-    target_compile_definitions(${TARGET_NAME} PRIVATE
+    target_compile_definitions(${TARGET_NAME} INTERFACE
         TRUSTCHAIN_BUILD_IS_CUSTOMIZED=${BUILD_IS_CUSTOMIZED}
         TRUSTCHAIN_API_TOKEN="${TRANSCIPHER_API_TOKEN}"
         TRUSTCHAIN_CREATOR_NAME="${TRUSTCHAIN_DEFAULT_CREATOR}"
