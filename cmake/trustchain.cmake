@@ -56,23 +56,22 @@ function(trustchain_setup_target TARGET_NAME)
         message(WARNING "[TrustChain] Git executable not found. Set build to customized.")
     endif()
 
-    # 3. GitHub APIからリモートマスタの最新コミットハッシュを取得 (出自証明)
+    # 3. Git ls-remoteからリモートマスタの最新コミットハッシュを取得 (出自証明)
     set(REMOTE_COMMIT_HASH "")
-    set(GITHUB_API_URL "https://api.github.com/repos/${TRUSTCHAIN_GITHUB_USER}/${TRUSTCHAIN_GITHUB_REPO}/commits/${TRUSTCHAIN_TARGET_BRANCH}")
     
-    message(STATUS "[TrustChain] Querying GitHub API for origin verification: ${GITHUB_API_URL}")
+    message(STATUS "[TrustChain] Querying remote git for origin verification: refs/heads/${TRUSTCHAIN_TARGET_BRANCH}")
     
-    # User-Agent ヘッダー（-A "TrustChain"）を付与しないと GitHub API は 403 Forbidden を返します
     execute_process(
-        COMMAND curl -s -A "TrustChain-Build-Agent" -H "Accept: application/vnd.github.v3+json" ${GITHUB_API_URL}
-        OUTPUT_VARIABLE GITHUB_RESPONSE
-        RESULT_VARIABLE CURL_API_RESULT
+        COMMAND ${GIT_EXECUTABLE} ls-remote origin refs/heads/${TRUSTCHAIN_TARGET_BRANCH}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_REMOTE_RESPONSE
+        RESULT_VARIABLE GIT_REMOTE_RESULT
         TIMEOUT 10
     )
 
-    if (CURL_API_RESULT EQUAL 0 AND GITHUB_RESPONSE MATCHES "\"sha\"[ \t\r\n]*:[ \t\r\n]*\"([a-f0-9]+)\"")
+    if (GIT_REMOTE_RESULT EQUAL 0 AND GIT_REMOTE_RESPONSE MATCHES "^([a-f0-9]+)")
         set(REMOTE_COMMIT_HASH "${CMAKE_MATCH_1}")
-        message(STATUS "[TrustChain] GitHub Remote Hash: ${REMOTE_COMMIT_HASH}")
+        message(STATUS "[TrustChain] Remote Hash: ${REMOTE_COMMIT_HASH}")
         message(STATUS "[TrustChain] Local Head Hash:   ${LOCAL_GIT_COMMIT_HASH}")
         
         # 4. 出自判定: ハッシュが不一致の場合は非公式（改ざん）扱い
@@ -83,9 +82,9 @@ function(trustchain_setup_target TARGET_NAME)
             message(STATUS "[TrustChain] Origin verification succeeded.")
         endif()
     else()
-        # 通信エラー、権限不足（404/403）、オフライン等の場合は安全側に倒して非公式判定
+        # 通信エラー、権限不足、オフライン等の場合は安全側に倒して非公式判定
         set(BUILD_IS_CUSTOMIZED "1")
-        message(WARNING "[TrustChain] Failed to contact GitHub API or invalid repository. Result: ${CURL_API_RESULT}")
+        message(WARNING "[TrustChain] Failed to contact remote git repository. Result: ${GIT_REMOTE_RESULT}")
     endif()
 
     # 5. TransCipher APIから自動トークン取得または事前生成トークンの利用
