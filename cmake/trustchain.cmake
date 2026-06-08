@@ -9,6 +9,10 @@
 function(trustchain_setup_target TARGET_NAME)
     # 1. 認証情報ファイルのロード（Git管理外）
     set(CREDENTIALS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/trustchain_credentials.cmake")
+    if(NOT EXISTS "${CREDENTIALS_FILE}")
+        set(CREDENTIALS_FILE "${CMAKE_SOURCE_DIR}/trustchain_credentials.cmake")
+    endif()
+
     if(EXISTS "${CREDENTIALS_FILE}")
         include("${CREDENTIALS_FILE}")
         message(STATUS "[TrustChain] Loaded credentials from: ${CREDENTIALS_FILE}")
