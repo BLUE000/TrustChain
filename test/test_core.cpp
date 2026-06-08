@@ -1,5 +1,8 @@
-#include <gtest/gtest.h>
+#define private public
 #include "TrustChainCore.hpp"
+#undef private
+
+#include <gtest/gtest.h>
 #include "MockNetworkAccessManager.hpp"
 #include <QEventLoop>
 #include <QTimer>
@@ -29,7 +32,7 @@ protected:
 
 // UT_TC_CORE_001: 正常系 (有効なトークンでの認証成功)
 TEST_F(TrustChainCoreTest, VerifyToken_Success) {
-    QByteArray successJson = R"({"status": "success", "valid": true})";
+    QByteArray successJson = R"({"status": "success", "token_status": "active"})";
     mockManager->setExpectedResponse(testUrl, 200, successJson);
 
     // テスト対象の実行 (setBuildIsCustomized(false) により必ずオンライン検証が走る)
@@ -40,7 +43,7 @@ TEST_F(TrustChainCoreTest, VerifyToken_Success) {
 
 // UT_TC_CORE_002: トークン無効判定時の強制終了ステータス
 TEST_F(TrustChainCoreTest, VerifyToken_InvalidToken_Revoked) {
-    QByteArray revokedJson = R"({"status": "success", "valid": false})";
+    QByteArray revokedJson = R"({"status": "success", "token_status": "inactive"})";
     mockManager->setExpectedResponse(testUrl, 200, revokedJson);
 
     TrustChain::AuthStatus status = core->verifyToken();
@@ -49,7 +52,7 @@ TEST_F(TrustChainCoreTest, VerifyToken_InvalidToken_Revoked) {
 
 // UT_TC_CORE_003: オンライン検証タイムアウト (3秒で打ち切り)
 TEST_F(TrustChainCoreTest, VerifyToken_Timeout) {
-    QByteArray successJson = R"({"status": "success", "valid": true})";
+    QByteArray successJson = R"({"status": "success", "token_status": "active"})";
     mockManager->setExpectedResponse(testUrl, 200, successJson);
     mockManager->setResponseDelay(3500); // 3.5秒遅延させる
 
@@ -115,10 +118,12 @@ TEST_F(TrustChainCoreTest, VerifyToken_CustomizedBuild_SkipsOnline) {
     core->setBuildIsCustomized(true); // 非公式ビルド状態を模擬
 
     // サーバーには「成功応答」を設定しておくが、通信はスキップされるはず
-    QByteArray successJson = R"({"status": "success", "valid": true})";
+    QByteArray successJson = R"({"status": "success", "token_status": "active"})";
     mockManager->setExpectedResponse(testUrl, 200, successJson);
 
     TrustChain::AuthStatus status = core->verifyToken();
     // 通信をスキップして即座に Watermarked になること
     EXPECT_EQ(status, TrustChain::AuthStatus::Watermarked);
 }
+
+

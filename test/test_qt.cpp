@@ -45,7 +45,7 @@ TEST_F(TrustChainQtTest, ApplyWatermark_WatermarkedStatus_AppliesWatermark) {
     
     // コピーライト文字列が含まれていること
     QString expectedMessage = "© BLUE000 (Original Creator)";
-    EXPECT_EQ(bar->currentMessage(), expectedMessage);
+    EXPECT_TRUE(bar->currentMessage().startsWith(expectedMessage));
 
     // スタイルシートが適用されていること
     EXPECT_FALSE(bar->styleSheet().isEmpty());

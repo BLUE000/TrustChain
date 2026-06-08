@@ -88,40 +88,52 @@ function(trustchain_setup_target TARGET_NAME)
         message(WARNING "[TrustChain] Failed to contact GitHub API or invalid repository. Result: ${CURL_API_RESULT}")
     endif()
 
-    # 5. TransCipher APIから自動トークン取得
+    # 5. TransCipher APIから自動トークン取得または事前生成トークンの利用
     set(TRANSCIPHER_API_TOKEN "UNAUTHORIZED_TOKEN")
-    
-    # POST用 JSON ペイロード構築
-    set(IS_OFFICIAL_STR "true")
-    if (BUILD_IS_CUSTOMIZED EQUAL 1)
-        set(IS_OFFICIAL_STR "false")
-    endif()
-    
-    set(CURL_JSON_PAYLOAD "{\"action\":\"generate\",\"system_name\":\"${PROJECT_NAME}\",\"build_secret\":\"${TRUSTCHAIN_BUILD_SECRET}\",\"build_hash\":\"${LOCAL_GIT_COMMIT_HASH}\",\"is_official\":${IS_OFFICIAL_STR}}")
-    
-    message(STATUS "[TrustChain] Requesting API Token from: ${TRUSTCHAIN_TOKEN_ISSUER_URL}")
-    
-    execute_process(
-        COMMAND curl -s -X POST -H "Content-Type: application/json" -d "${CURL_JSON_PAYLOAD}" ${TRUSTCHAIN_TOKEN_ISSUER_URL}
-        OUTPUT_VARIABLE FETCHED_JSON
-        RESULT_VARIABLE CURL_TOKEN_RESULT
-        TIMEOUT 10
-    )
-    
-    # 応答JSONからトークン値を抽出
-    if (CURL_TOKEN_RESULT EQUAL 0 AND FETCHED_JSON MATCHES "\"status\"[ \t\r\n]*:[ \t\r\n]*\"success\"" AND FETCHED_JSON MATCHES "\"token\"[ \t\r\n]*:[ \t\r\n]*\"([^\"]+)\"")
-        set(RAW_TOKEN "${CMAKE_MATCH_1}")
-        # 余分な空白、改行等を厳密にトリミング (STRIP) し、マクロへの \0 混入を防ぐ
-        string(STRIP "${RAW_TOKEN}" CLEAN_TOKEN)
-        set(TRANSCIPHER_API_TOKEN "${CLEAN_TOKEN}")
-        message(STATUS "[TrustChain] Token successfully retrieved and trimmed.")
+
+    if (DEFINED TRUSTCHAIN_PREGENERATED_TOKEN AND NOT "${TRUSTCHAIN_PREGENERATED_TOKEN}" STREQUAL "")
+        message(STATUS "[TrustChain] Using pre-generated API token.")
+        set(TRANSCIPHER_API_TOKEN "${TRUSTCHAIN_PREGENERATED_TOKEN}")
     else()
-        message(WARNING "[TrustChain] Failed to retrieve token from server. App may function with limitations. Response: ${FETCHED_JSON}")
+        # POST用 JSON ペイロード構築
+        set(IS_OFFICIAL_STR "true")
+        if (BUILD_IS_CUSTOMIZED EQUAL 1)
+            set(IS_OFFICIAL_STR "false")
+        endif()
+        
+        set(CURL_JSON_PAYLOAD "{\"action\":\"generate\",\"system_name\":\"${PROJECT_NAME}\",\"build_secret\":\"${TRUSTCHAIN_BUILD_SECRET}\",\"build_hash\":\"${LOCAL_GIT_COMMIT_HASH}\",\"is_official\":${IS_OFFICIAL_STR}}")
+        
+        message(STATUS "[TrustChain] Requesting API Token from: ${TRUSTCHAIN_TOKEN_ISSUER_URL}")
+        
+        execute_process(
+            COMMAND curl -s -X POST -H "Content-Type: application/json" -d "${CURL_JSON_PAYLOAD}" ${TRUSTCHAIN_TOKEN_ISSUER_URL}
+            OUTPUT_VARIABLE FETCHED_JSON
+            RESULT_VARIABLE CURL_TOKEN_RESULT
+            TIMEOUT 10
+        )
+        
+        # 応答JSONからトークン値を抽出
+        if (CURL_TOKEN_RESULT EQUAL 0 AND FETCHED_JSON MATCHES "\"status\"[ \t\r\n]*:[ \t\r\n]*\"success\"" AND FETCHED_JSON MATCHES "\"token\"[ \t\r\n]*:[ \t\r\n]*\"([^\"]+)\"")
+            set(RAW_TOKEN "${CMAKE_MATCH_1}")
+            # 余分な空白、改行等を厳密にトリミング (STRIP) し、マクロへの \0 混入を防ぐ
+            string(STRIP "${RAW_TOKEN}" CLEAN_TOKEN)
+            set(TRANSCIPHER_API_TOKEN "${CLEAN_TOKEN}")
+            message(STATUS "[TrustChain] Token successfully retrieved and trimmed.")
+        else()
+            message(WARNING "[TrustChain] Failed to retrieve token from server. App may function with limitations. Response: ${FETCHED_JSON}")
+        endif()
     endif()
 
     # 6. コンパイル定義（マクロ埋め込み）への設定
     # ダブルクォーテーションで安全に囲み、コンパイラへ通常の文字列定数として渡します。
-    target_compile_definitions(${TARGET_NAME} PRIVATE
+    get_target_property(TARGET_TYPE ${TARGET_NAME} TYPE)
+    if (TARGET_TYPE STREQUAL "INTERFACE_LIBRARY")
+        set(SCOPE INTERFACE)
+    else()
+        set(SCOPE PRIVATE)
+    endif()
+
+    target_compile_definitions(${TARGET_NAME} ${SCOPE}
         TRUSTCHAIN_BUILD_IS_CUSTOMIZED=${BUILD_IS_CUSTOMIZED}
         TRUSTCHAIN_API_TOKEN="${TRANSCIPHER_API_TOKEN}"
         TRUSTCHAIN_CREATOR_NAME="${TRUSTCHAIN_DEFAULT_CREATOR}"

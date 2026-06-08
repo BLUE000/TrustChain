@@ -56,7 +56,7 @@ AuthStatus Core::verifyToken()
     QNetworkAccessManager* manager = m_customManager ? m_customManager : &localManager;
     
     QJsonObject payload;
-    payload["action"] = "verify";
+    payload["action"] = "check_status";
     payload["token"] = m_apiToken; // トリミング済みの安全なトークンを設定
     
     QJsonDocument doc(payload);
@@ -111,13 +111,13 @@ AuthStatus Core::verifyToken()
 
     QJsonObject responseObj = responseDoc.object();
     QString status = responseObj.value("status").toString().trimmed();
-    bool isValid = responseObj.value("valid").toBool();
+    QString tokenStatus = responseObj.value("token_status").toString().trimmed();
 
-    if (status == "success" && isValid) {
+    if (status == "success" && tokenStatus == "active") {
         qInfo("[TrustChain] Provenance verification successful. Standard official build authorized.");
         return AuthStatus::Normal;
-    } else if (responseObj.contains("valid") && !isValid) {
-        // サーバーが明確に "valid: false" を返した場合は、該当トークンが無効化（ブラックリスト入り）されているため強制終了
+    } else if (status == "success" && tokenStatus == "inactive") {
+        // サーバーが明確に "token_status: inactive" を返した場合は、該当トークンが無効化（ブラックリスト入り）されているため強制終了
         qCritical("[TrustChain] Token has been explicitly revoked or invalidated by administrator.");
         return AuthStatus::Terminated;
     }
