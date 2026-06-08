@@ -11,6 +11,10 @@
 #define TRUSTCHAIN_CREATOR_NAME "BLUE000"
 #endif
 
+#ifndef TRUSTCHAIN_VERSION
+#define TRUSTCHAIN_VERSION "Unknown"
+#endif
+
 namespace TrustChain {
 
 void QtHelper::applyWatermark(QMainWindow* window, AuthStatus status)
@@ -38,7 +42,8 @@ void QtHelper::applyWatermark(QMainWindow* window, AuthStatus status)
         QStatusBar* statusBar = window->statusBar(); // なければ自動生成される
         if (statusBar) {
             QString copyrightOwner = QString::fromUtf8(TRUSTCHAIN_CREATOR_NAME);
-            statusBar->showMessage(QString("© %1 (Original Creator)").arg(copyrightOwner));
+            QString version = QString::fromUtf8(TRUSTCHAIN_VERSION);
+            statusBar->showMessage(QString("© %1 (Original Creator) v%2").arg(copyrightOwner, version));
 
             // 他のテキストで上書きや、非表示化されるのをCSSと属性で保護
             statusBar->setStyleSheet(
