@@ -48,16 +48,16 @@ set(TRUSTCHAIN_DEFAULT_CREATOR "BLUE000" CACHE STRING "Original creator copyrigh
    * `BUILD_IS_CUSTOMIZED` を `"0"`（公式）に初期化。
 2. **Git status (ローカルの改ざん判定)**
    * `git status --porcelain` を実行し、未コミットの変更がある場合は `BUILD_IS_CUSTOMIZED = 1` に設定。
-3. **GitHub API を用いた最新マスタのハッシュ取得**
-   * インターネット接続を行い、以下の GitHub API エンドポイントから最新のコミットハッシュを取得する。
+3. **GitHub API を用いたローカルコミットハッシュの存在検証**
+   * インターネット接続を行い、以下の GitHub API エンドポイントからローカルのコミットハッシュ情報を取得する。
      ```
-     https://api.github.com/repos/${TRUSTCHAIN_GITHUB_USER}/${TRUSTCHAIN_GITHUB_REPO}/commits/${TRUSTCHAIN_TARGET_BRANCH}
+     https://api.github.com/repos/${TRUSTCHAIN_GITHUB_USER}/${TRUSTCHAIN_GITHUB_REPO}/commits/${LOCAL_GIT_COMMIT_HASH}
      ```
    * Windows環境の `curl` を用いて、レスポンスの JSON から `sha` フィールド（コミットハッシュ）を正規表現で抽出する。
    * **通信失敗・タイムアウト・権限不足（404/403）時の挙動**: `BUILD_IS_CUSTOMIZED = 1` に設定する。
-4. **コミットハッシュの比較**
-   * ローカルの現在ヘッドのコミットハッシュ（`git rev-parse HEAD`）と、GitHub API から取得した最新コミットハッシュを比較する。
-   * **不一致（古いバージョン、あるいは独自コミット）時の挙動**: `BUILD_IS_CUSTOMIZED = 1` に設定する。
+4. **コミットハッシュの存在判定**
+   * 抽出した `sha` が、ローカルHEADのコミットハッシュ（`LOCAL_GIT_COMMIT_HASH`）と一致するかを確認する（リモートに存在する＝pushされていることの確認）。
+   * **不一致（リモートに未pushのコミット）時の挙動**: `BUILD_IS_CUSTOMIZED = 1` に設定する。
 5. **TransCipher APIへのトークン発行要求**
    * `curl` コマンドを用いて、`TRUSTCHAIN_TOKEN_ISSUER_URL` に対して以下の JSON ペイロードで POST 送信する。
      ```json
@@ -142,7 +142,7 @@ private:
    * `QTimer` を併用し、**3.0秒**で応答がない場合はタイムアウトとし、自動的に `AuthStatus::Watermarked` （オフライン扱い）にフォールバックする。
 3. 検証結果の解析：
    * サーバーから `{"status": "success", "valid": true}` が返された場合 ＝ `AuthStatus::Normal`。
-   * サーバーから `{"status": "error"}` または有効性 `false` が返された場合（＝管理画面でトークンが無効化された場合） ＝ `AuthStatus::Terminated`。
+   * サーバーから `{"status": "error"}` または有効性 `false` が返された場合（＝トークンが無効判定された場合） ＝ `AuthStatus::Terminated`。
    * その他のHTTPエラー、DNSエラー ＝ `AuthStatus::Watermarked`。
 
 ---

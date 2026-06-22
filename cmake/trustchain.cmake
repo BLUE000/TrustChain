@@ -56,30 +56,24 @@ function(trustchain_setup_target TARGET_NAME)
         message(WARNING "[TrustChain] Git executable not found. Set build to customized.")
     endif()
 
-    # 3. Git ls-remoteからリモートマスタの最新コミットハッシュを取得 (出自証明)
-    set(REMOTE_COMMIT_HASH "")
-    
-    message(STATUS "[TrustChain] Querying remote git for origin verification: refs/heads/${TRUSTCHAIN_TARGET_BRANCH}")
+    # 3. Git ls-remoteからリモートリポジトリに現在のコミットが存在するか確認 (出自証明)
+    message(STATUS "[TrustChain] Querying remote git for origin verification of commit: ${LOCAL_GIT_COMMIT_HASH}")
     
     execute_process(
-        COMMAND ${GIT_EXECUTABLE} ls-remote origin refs/heads/${TRUSTCHAIN_TARGET_BRANCH}
+        COMMAND ${GIT_EXECUTABLE} ls-remote origin
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         OUTPUT_VARIABLE GIT_REMOTE_RESPONSE
         RESULT_VARIABLE GIT_REMOTE_RESULT
         TIMEOUT 10
     )
 
-    if (GIT_REMOTE_RESULT EQUAL 0 AND GIT_REMOTE_RESPONSE MATCHES "^([a-f0-9]+)")
-        set(REMOTE_COMMIT_HASH "${CMAKE_MATCH_1}")
-        message(STATUS "[TrustChain] Remote Hash: ${REMOTE_COMMIT_HASH}")
-        message(STATUS "[TrustChain] Local Head Hash:   ${LOCAL_GIT_COMMIT_HASH}")
-        
-        # 4. 出自判定: ハッシュが不一致の場合は非公式（改ざん）扱い
-        if (NOT "${LOCAL_GIT_COMMIT_HASH}" STREQUAL "${REMOTE_COMMIT_HASH}")
-            set(BUILD_IS_CUSTOMIZED "1")
-            message(STATUS "[TrustChain] Origin verification failed: Commit hash mismatch.")
+    if (GIT_REMOTE_RESULT EQUAL 0)
+        # 4. 出自判定: リモートの出力にローカルHEADのコミットハッシュが含まれているか確認
+        if (GIT_REMOTE_RESPONSE MATCHES "${LOCAL_GIT_COMMIT_HASH}")
+            message(STATUS "[TrustChain] Origin verification succeeded: Commit exists on remote.")
         else()
-            message(STATUS "[TrustChain] Origin verification succeeded.")
+            set(BUILD_IS_CUSTOMIZED "1")
+            message(STATUS "[TrustChain] Origin verification failed: Commit does NOT exist on remote.")
         endif()
     else()
         # 通信エラー、権限不足、オフライン等の場合は安全側に倒して非公式判定
