@@ -32,6 +32,18 @@ function(trustchain_setup_target TARGET_NAME)
     # 2. ローカル Git の状態を取得
     find_package(Git)
     if(GIT_FOUND)
+        # 現在のローカルブランチ名を取得してターゲットブランチを動的に切り替え
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            OUTPUT_VARIABLE CURRENT_GIT_BRANCH
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        if(NOT "${CURRENT_GIT_BRANCH}" STREQUAL "" AND NOT "${CURRENT_GIT_BRANCH}" STREQUAL "HEAD")
+            set(TRUSTCHAIN_TARGET_BRANCH "${CURRENT_GIT_BRANCH}")
+            message(STATUS "[TrustChain] Target branch dynamically set to active branch: ${TRUSTCHAIN_TARGET_BRANCH}")
+        endif()
+
         # 未コミットのローカル変更があるかチェック
         execute_process(
             COMMAND ${GIT_EXECUTABLE} status --porcelain
